@@ -3,27 +3,42 @@ Copyright (c) 2025 Amelia Livingston. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Amelia Livingston
 -/
+import Mathlib.CategoryTheory.Abelian.Ext
 import Mathlib.RepresentationTheory.Coinduced
+import Mathlib.RepresentationTheory.Homological.GroupCohomology.Basic
 import Mathlib.RepresentationTheory.Induced
 
 /-!
-# (Co)induced representations of a finite index subgroup
+# Shapiro's lemma
 
-Given a commutative ring `k`, a finite index subgroup `S ≤ G`, and a `k`-linear `S`-representation
-`A`, this file defines an isomorphism $Ind_S^G(A) ≅ Coind_S^G(A).$ Given `g : G` and `a : A`, the
-forward map sends `⟦g ⊗ₜ[k] a⟧` to the function `G → A`supported at `sg` by `ρ(s)(a)` for `s : S`
-and which is 0 elsewhere. Meanwhile, the inverse sends `f : G → A` to `∑ᵢ ⟦gᵢ ⊗ₜ[k] f(gᵢ)⟧` for
-`1 ≤ i ≤ n`, where `g₁, ..., gₙ` is a set of right coset representatives of `S`.
+Given a commutative ring `k` and a finite index subgroup `S ≤ G`, this file defines a natural
+isomorphism between the functors `Ind_S^G, Coind_S^G : Rep k S ⥤ Rep k G`. Given a `k`-linear
+`S`-representation `A` and elements `g : G` and `a : A`, the forward map
+`Ind_S^G(A) ⟶ Coind_S^G(A)` sends `⟦g ⊗ₜ[k] a⟧` to the function `G → A`supported at `sg` by
+`ρ(s)(a)` for `s : S` and which is 0 elsewhere. Meanwhile, the inverse sends `f : G → A` to
+`∑ᵢ ⟦gᵢ ⊗ₜ[k] f(gᵢ)⟧` for `1 ≤ i ≤ n`, where `g₁, ..., gₙ` is a set of right coset representatives
+of `S`.
+
+Using this isomorphism, we conclude that the `(Co)ind_S^G` and `Res(S) : Rep k G ⥤ Rep k S` are
+both left and right adjoint to each other, and thus that `Res(S)` sends projective objects
+to projective objects. In particular, given a projective resolution `P` of `k` as a trivial
+`k`-linear `G`-representation, `Res(S)(P)` is a projective resolution of `k` as a trivial
+`k`-linear `S`-representation. Since `Hom(Res(S)(P), A) ≅ Hom(P, Coind_S^G(A))` for any
+`S`-representation `A`, we conclude Shapiro's lemma for group cohomology:
+`Hⁿ(G, Coind_S^G(A)) ≅ Hⁿ(S, A)` for all `n`.
 
 ## Main definitions
 
 * `Rep.indCoindIso A`: An isomorphism `Ind_S^G(A) ≅ Coind_S^G(A)` for a finite index subgroup
   `S ≤ G` and a `k`-linear `S`-representation `A`.
 * `Rep.indCoindNatIso k S`: A natural isomorphism between the functors `Ind_S^G` and `Coind_S^G`.
+* `groupCohomology.coindIso A n`: Shapiro's lemma for group cohomology: an isomorphism
+  `Hⁿ(G, Coind_S^G(A)) ≅ Hⁿ(S, A)`, given a finite index subgroup `S ≤ G` and an
+  `S`-representation `A`.
 
 ## TODO
 
-* Add Shapiro's lemma, using this isomorphism.
+* Add Shapiro's lemma for group homology.
 
 -/
 
@@ -255,4 +270,53 @@ lemma coindResAdjunction_homEquiv_symm_apply
     Adjunction.mkOfHomEquiv_homEquiv]
   rfl
 
+instance (B : Rep k G) [Projective B] : Projective ((Action.res _ S.subtype).obj B) :=
+  (resIndAdjunction k S).map_projective B ‹_›
+
+instance (B : Rep k G) [Injective B] : Injective ((Action.res _ S.subtype).obj B) :=
+  (coindResAdjunction k S).map_injective B ‹_›
+open Limits
+
+variable (S) in
+/-- A projective resolution of `k` as a trivial `k`-linear `G`-representation is also a projective
+resolution of `k` as a trivial `S`-linear `G`-representation for any finite index subgroup `S` of
+`G`. -/
+@[simps]
+noncomputable def resProjectiveResolution (P : ProjectiveResolution (trivial k G k)) :
+    ProjectiveResolution (trivial k S k) where
+  complex := ((Action.res _ S.subtype).mapHomologicalComplex _).obj P.complex
+  projective _ := inferInstanceAs <| Projective <| (Action.res _ S.subtype).obj _
+  hasHomology _ := inferInstance
+  π := ((Action.res _ S.subtype).mapHomologicalComplex _).map P.π ≫
+    (HomologicalComplex.singleMapHomologicalComplex _ _ _).hom.app _
+  quasiIso := inferInstance
+
 end Rep
+namespace groupCohomology
+
+open CategoryTheory Finsupp TensorProduct Rep
+
+variable {k G : Type u} [CommRing k] [Group G] {S : Subgroup G}
+  [DecidableRel (QuotientGroup.rightRel S)] [Fintype (G ⧸ S)] (A : Rep k S)
+
+/-- Given a projective resolution `P` of `k` as a `k`-linear `G`-representation, a finite index
+subgroup `S ≤ G`, and a `k`-linear `S`-representation `A`, this is an isomorphism
+`Hom(Res(S)(P), A) ≅ Hom(P, Coind_S^G(A)).` -/
+noncomputable def linearYonedaObjResProjectiveResolutionIso
+    (P : ProjectiveResolution (trivial k G k)) (A : Rep k S) :
+    (resProjectiveResolution S P).complex.linearYonedaObj k A ≅
+      P.complex.linearYonedaObj k (coind S.subtype A) :=
+  HomologicalComplex.Hom.isoOfComponents
+    (fun _ => (resCoindHomEquiv _ _ _).toModuleIso) fun _ _ _ =>
+      ModuleCat.hom_ext (LinearMap.ext fun f => Action.Hom.ext <| by ext; simp [hom_comm_apply])
+
+/-- Shapiro's lemma: given a finite index subgroup `S ≤ G` and an `S`-representation `A`, we have
+`Hⁿ(G, Coind_S^G(A)) ≅ Hⁿ(S, A).` -/
+noncomputable def coindIso [DecidableEq G] (A : Rep k S) (n : ℕ) :
+    groupCohomology (coind S.subtype A) n ≅ groupCohomology A n :=
+  (HomologicalComplex.homologyFunctor _ _ _).mapIso
+    (inhomogeneousCochainsIso (coind S.subtype A) ≪≫
+    (linearYonedaObjResProjectiveResolutionIso (barResolution k G) A).symm) ≪≫
+  (groupCohomologyIso A n (resProjectiveResolution S <| barResolution k G)).symm
+
+end groupCohomology
