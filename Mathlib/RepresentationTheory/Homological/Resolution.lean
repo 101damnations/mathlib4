@@ -3,9 +3,12 @@ Copyright (c) 2022 Amelia Livingston. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Amelia Livingston
 -/
-import Mathlib.RepresentationTheory.Homological.Resolution
+import Mathlib.Algebra.Category.ModuleCat.Projective
+import Mathlib.AlgebraicTopology.ExtraDegeneracy
+import Mathlib.CategoryTheory.Abelian.Ext
+import Mathlib.RepresentationTheory.Rep
+import Mathlib.CategoryTheory.Functor.ReflectsIso.Balanced
 
-<<<<<<<< HEAD:Mathlib/RepresentationTheory/Homological/Resolution.lean
 /-!
 # The standard and bar resolutions of `k` as a trivial `k`-linear `G`-representation
 
@@ -472,6 +475,3 @@ def barResolution.extIso (V : Rep k G) (n : ℕ) :
   (barResolution k G).isoExt n V
 
 end Rep
-========
-deprecated_module (since := "2025-06-14")
->>>>>>>> 203d627a67ce266bb438ee086c8d388dd04d4d3e:Mathlib/RepresentationTheory/GroupCohomology/Resolution.lean
