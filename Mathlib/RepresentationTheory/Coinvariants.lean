@@ -352,7 +352,7 @@ lemma coinvariantsFunctor_hom_ext {M : ModuleCat k} {f g : (coinvariantsFunctor 
 
 /-- The linear map underlying a `G`-representation morphism `A ⟶ B`, where `B` has the trivial
 representation, factors through `A_G`. -/
-noncomputable abbrev desc [B.ρ.IsTrivial] (f : A ⟶ B) :
+noncomputable abbrev coinvariantsDesc [B.ρ.IsTrivial] (f : A ⟶ B) :
     (coinvariantsFunctor k G).obj A ⟶ B.V :=
   ModuleCat.ofHom <| Representation.Coinvariants.lift _ f.hom.hom fun _ => by
     ext
@@ -371,7 +371,7 @@ noncomputable def coinvariantsAdjunction : coinvariantsFunctor k G ⊣ trivialFu
   unit := { app X := {
     hom := (coinvariantsMk k G).app X
     comm _ := by ext; simp [ModuleCat.endRingEquiv, trivialFunctor] }}
-  counit := { app X := desc (B := trivial k G X) (𝟙 _) }
+  counit := { app X := coinvariantsDesc (B := trivial k G X) (𝟙 _) }
 
 @[simp]
 theorem coinvariantsAdjunction_homEquiv_apply_hom {X : Rep k G} {Y : ModuleCat k}
@@ -382,7 +382,7 @@ theorem coinvariantsAdjunction_homEquiv_apply_hom {X : Rep k G} {Y : ModuleCat k
 @[simp]
 theorem coinvariantsAdjunction_homEquiv_symm_apply_hom {X : Rep k G} {Y : ModuleCat k}
     (f : X ⟶ (trivialFunctor k G).obj Y) :
-    ((coinvariantsAdjunction k G).homEquiv X Y).symm f = desc f := by
+    ((coinvariantsAdjunction k G).homEquiv X Y).symm f = coinvariantsDesc f := by
   ext
   simp [coinvariantsAdjunction, Adjunction.homEquiv_symm_apply]
 
