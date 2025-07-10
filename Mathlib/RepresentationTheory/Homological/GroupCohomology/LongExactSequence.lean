@@ -47,6 +47,14 @@ lemma map_cochainsFunctor_shortExact :
     mono_f := letI := hX.mono_f; cochainsMap_id_f_map_mono X.f i
     epi_g := letI := hX.epi_g; cochainsMap_id_f_map_epi X.g i }
 
+instance : Limits.PreservesFiniteLimits (cochainsFunctor k G) := by
+  have := ((cochainsFunctor k G).exact_tfae.out 0 3)
+  exact (this.1 fun X hX => map_cochainsFunctor_shortExact hX).1
+
+instance : Limits.PreservesFiniteColimits (cochainsFunctor k G) := by
+  have := ((cochainsFunctor k G).exact_tfae.out 0 3)
+  exact (this.1 fun X hX => map_cochainsFunctor_shortExact hX).2
+
 open HomologicalComplex.HomologySequence
 
 /-- The short complex `Hⁱ(G, X₃) ⟶ Hʲ(G, X₁) ⟶ Hʲ(G, X₂)` associated to an exact

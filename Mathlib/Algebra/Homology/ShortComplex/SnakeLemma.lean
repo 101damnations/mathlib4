@@ -460,6 +460,26 @@ variable (f : S₁ ⟶ S₂) (g : S₂ ⟶ S₃)
 
 end
 
+variable (f : S₁ ⟶ S₂)
+
+@[reassoc] lemma comm₀₁_τ₁ : f.f₀.τ₁ ≫ S₂.v₀₁.τ₁ = S₁.v₀₁.τ₁ ≫ f.f₁.τ₁ := congr(Hom.τ₁ $f.comm₀₁)
+@[reassoc] lemma comm₀₁_τ₂ : f.f₀.τ₂ ≫ S₂.v₀₁.τ₂ = S₁.v₀₁.τ₂ ≫ f.f₁.τ₂ := congr(Hom.τ₂ $f.comm₀₁)
+@[reassoc] lemma comm₀₁_τ₃ : f.f₀.τ₃ ≫ S₂.v₀₁.τ₃ = S₁.v₀₁.τ₃ ≫ f.f₁.τ₃ := congr(Hom.τ₃ $f.comm₀₁)
+@[reassoc] lemma comm₁₂_τ₁ : f.f₁.τ₁ ≫ S₂.v₁₂.τ₁ = S₁.v₁₂.τ₁ ≫ f.f₂.τ₁ := congr(Hom.τ₁ $f.comm₁₂)
+@[reassoc] lemma comm₁₂_τ₂ : f.f₁.τ₂ ≫ S₂.v₁₂.τ₂ = S₁.v₁₂.τ₂ ≫ f.f₂.τ₂ := congr(Hom.τ₂ $f.comm₁₂)
+@[reassoc] lemma comm₁₂_τ₃ : f.f₁.τ₃ ≫ S₂.v₁₂.τ₃ = S₁.v₁₂.τ₃ ≫ f.f₂.τ₃ := congr(Hom.τ₃ $f.comm₁₂)
+@[reassoc] lemma comm₂₃_τ₁ : f.f₂.τ₁ ≫ S₂.v₂₃.τ₁ = S₁.v₂₃.τ₁ ≫ f.f₃.τ₁ := congr(Hom.τ₁ $f.comm₂₃)
+@[reassoc] lemma comm₂₃_τ₂ : f.f₂.τ₂ ≫ S₂.v₂₃.τ₂ = S₁.v₂₃.τ₂ ≫ f.f₃.τ₂ := congr(Hom.τ₂ $f.comm₂₃)
+@[reassoc] lemma comm₂₃_τ₃ : f.f₂.τ₃ ≫ S₂.v₂₃.τ₃ = S₁.v₂₃.τ₃ ≫ f.f₃.τ₃ := congr(Hom.τ₃ $f.comm₂₃)
+
+@[ext high]
+lemma hom_ext {f g : S₁ ⟶ S₂} (h₁ : f.f₁ = g.f₁) (h₂ : f.f₂ = g.f₂) : f = g := by
+  apply SnakeInput.Hom.ext <;>
+  ext <;>
+  simp_all [← cancel_mono S₂.v₀₁.τ₁, comm₀₁_τ₁, ← cancel_mono S₂.v₀₁.τ₂, comm₀₁_τ₂,
+    ← cancel_mono S₂.v₀₁.τ₃, comm₀₁_τ₃, ← cancel_epi S₁.v₂₃.τ₁, ← comm₂₃_τ₁,
+    ← cancel_epi S₁.v₂₃.τ₂, ← comm₂₃_τ₂, ← cancel_epi S₁.v₂₃.τ₃, ← comm₂₃_τ₃]
+
 /-- The functor which sends `S : SnakeInput C` to its zeroth line `S.L₀`. -/
 @[simps]
 def functorL₀ : SnakeInput C ⥤ ShortComplex C where

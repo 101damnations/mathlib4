@@ -59,6 +59,13 @@ instance (V : Rep k G) : Module k V := by
   change Module k ((forget₂ (Rep k G) (ModuleCat k)).obj V)
   infer_instance
 
+instance {A B : Rep k G} : LinearMapClass (Action.HomSubtype (ModuleCat k) G A B) k A B where
+  map_add _ := LinearMap.map_add _
+  map_smulₛₗ _ := LinearMap.map_smul _
+
+lemma hom_hom {A B : Rep k G} (f : A ⟶ B) :
+  ConcreteCategory.hom f.hom = ConcreteCategory.hom f := rfl
+
 /-- Specialize the existing `Action.ρ`, changing the type to `Representation k G V`.
 -/
 def ρ (V : Rep k G) : Representation k G V :=

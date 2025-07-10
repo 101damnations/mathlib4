@@ -105,6 +105,30 @@ noncomputable def coindFunctor : Rep k G ⥤ Rep k H where
   obj A := coind φ A
   map f := coindMap φ f
 
+instance {G : Type u} [Group G] (S : Subgroup G) :
+    (coindFunctor k S.subtype).PreservesEpimorphisms where
+  preserves {X Y} f := (Rep.epi_iff_surjective _).2 fun y => by
+    letI := QuotientGroup.rightRel S
+    choose! s hs using (Rep.epi_iff_surjective f).1 ‹_›
+    choose! i hi using Quotient.mk'_surjective (α := G)
+    let γ : G → S := fun g => ⟨g * (i (Quotient.mk' g))⁻¹,
+      (QuotientGroup.rightRel_apply.1 (Quotient.eq'.1 (hi (Quotient.mk' g))))⟩
+    have hmk : ∀ (s : S) (g : G), Quotient.mk' (s.1 * g) = Quotient.mk' g := fun _ _ =>
+      Quotient.eq'.2 <| QuotientGroup.rightRel_apply.2 <| by simp
+    have hγ : ∀ (s : S) (g : G), γ (s.1 * g) = s * γ g := fun _ _ => by
+      ext; simp [mul_assoc, γ, hmk]
+    let x : G → X := fun g => X.ρ (γ g) (s <| y.1 <| i <| Quotient.mk' g)
+    refine ⟨⟨x, ?_⟩, ?_⟩
+    intro s g
+    unfold x
+    rw [← Module.End.mul_apply, ← map_mul, Subgroup.coe_subtype, hmk, hγ]
+    simp
+    ext g
+    unfold x
+    simp_all [hom_comm_apply]
+    rw [← y.2 (γ g)]
+    simp [γ]
+
 end Coind
 section Coind'
 
